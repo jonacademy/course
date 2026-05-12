@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovoEd Content Blueprint Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .lesson-card { border-left: 4px solid #3b82f6; }
+        .section-card { border-left: 8px solid #1e293b; }
+        select optgroup { font-weight: 700; color: #64748b; background: #f1f5f9; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const CONTENT_CATEGORIES = [
+            {
+                label: 'General Content',
+                options: [
+                    { id: 'content', label: 'Content (Text/Images)', color: '#3b82f6' },
+                    { id: 'video', label: 'Video', color: '#ef4444' },
+                    { id: 'audio', label: 'Audio', color: '#8b5cf6' }
+                ]
+            },
+            {
+                label: 'Practice & Application',
+                options: [
+                    { id: 'assignment', label: 'Assignment', color: '#f59e0b' },
+                    { id: 'practice', label: 'Practice', color: '#10b981' },
+                    { id: 'ai-roleplay', label: 'AI Roleplay', color: '#ec4899' }
+                ]
+            },
+            {
+                label: 'Social Activities',
+                options: [
+                    { id: 'profile-completion', label: 'Profile Completion', color: '#6366f1' },
+                    { id: 'meet-and-greet', label: 'Meet and Greet', color: '#6366f1' },
+                    { id: 'team-formation', label: 'Team Formation', color: '#6366f1' },
+                    { id: 'group-formation', label: 'Group Formation', color: '#6366f1' },
+                    { id: 'submission-carousel', label: 'Submission Carousel', color: '#6366f1' },
+                    { id: 'discussion', label: 'Discussion', color: '#6366f1' },
+                    { id: 'poll', label: 'Poll', color: '#6366f1' }
+                ]
+            },
+            {
+                label: 'Feedback Activities',
+                options: [
+                    { id: 'assignment-feedback', label: 'Assignment Feedback', color: '#14b8a6' },
+                    { id: 'practice-feedback', label: 'Practice Feedback', color: '#14b8a6' }
+                ]
+            },
+            {
+                label: 'Quiz & Survey',
+                options: [
+                    { id: 'quiz', label: 'Quiz', color: '#f43f5e' },
+                    { id: 'timed-exam', label: 'Timed Exam', color: '#f43f5e' },
+                    { id: 'survey', label: 'Survey', color: '#f43f5e' }
+                ]
+            },
+            {
+                label: 'Third Party & Tools',
+                options: [
+                    { id: 'web-embed', label: 'Web Embed', color: '#64748b' },
+                    { id: 'web-link', label: 'Web Link', color: '#64748b' },
+                    { id: 'scorm-aicc', label: 'SCORM or AICC Files', color: '#64748b' },
+                    { id: 'lti-tools', label: 'LTI Tools', color: '#64748b' },
+                    { id: 'live-video', label: 'Live Video Events', color: '#64748b' }
+                ]
+            }
+        ];
+
+        const App = () => {
+            const [courseTitle, setCourseTitle] = useState('New Learning Programme');
+            const [sections, setSections] = useState([
+                {
+                    id: Date.now(),
+                    title: 'Introduction',
+                    lessons: [
+                        {
+                            id: Date.now() + 1,
+                            title: 'Getting Started',
+                            content: [{ id: Date.now() + 2, type: 'content', details: '' }]
+                        }
+                    ]
+                }
+            ]);
+
+            useEffect(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }, [sections, courseTitle]);
+
+            const addSection = () => {
+                const sId = Date.now();
+                setSections([...sections, {
+                    id: sId,
+                    title: '',
+                    lessons: [{ id: sId + 1, title: '', content: [] }]
+                }]);
+            };
+
+            const removeSection = (sId) => {
+                if (sections.length > 1) {
+                    setSections(sections.filter(s => s.id !== sId));
+                }
+            };
+
+            const updateSectionTitle = (sId, title) => {
+                setSections(sections.map(s => s.id === sId ? { ...s, title } : s));
+            };
+
+            const addLesson = (sId) => {
+                setSections(sections.map(s => {
+                    if (s.id === sId) {
+                        return { ...s, lessons: [...s.lessons, { id: Date.now(), title: '', content: [] }] };
+                    }
+                    return s;
+                }));
+            };
+
+            const removeLesson = (sId, lId) => {
+                setSections(sections.map(s => {
+                    if (s.id === sId) {
+                        return { ...s, lessons: s.lessons.filter(l => l.id !== lId) };
+                    }
+                    return s;
+                }));
+            };
+
+            const updateLessonTitle = (sId, lId, title) => {
+                setSections(sections.map(s => {
+                    if (s.id === sId) {
+                        return {
+                            ...s,
+                            lessons: s.lessons.map(l => l.id === lId ? { ...l, title } : l)
+                        };
+                    }
+                    return s;
+                }));
+            };
+
+            const addContent = (sId, lId) => {
+                setSections(sections.map(s => {
+                    if (s.id === sId) {
+                        return {
+                            ...s,
+                            lessons: s.lessons.map(l => {
+                                if (l.id === lId) {
+                                    return { ...l, content: [...l.content, { id: Date.now(), type: 'content', details: '' }] };
+                                }
+                                return l;
+                            })
+                        };
+                    }
+                    return s;
+                }));
+            };
+
+            const updateContent = (sId, lId, cId, updates) => {
+                setSections(sections.map(s => {
+                    if (s.id === sId) {
+                        return {
+                            ...s,
+                            lessons: s.lessons.map(l => {
+                                if (l.id === lId) {
+                                    return {
+                                        ...l,
+                                        content: l.content.map(c => c.id === cId ? { ...c, ...updates } : c)
+                                    };
+                                }
+                                return l;
+                            })
+                        };
+                    }
+                    return s;
+                }));
+            };
+
+            const removeContent = (sId, lId, cId) => {
+                setSections(sections.map(s => {
+                    if (s.id === sId) {
+                        return {
+                            ...s,
+                            lessons: s.lessons.map(l => {
+                                if (l.id === lId) {
+                                    return { ...l, content: l.content.filter(c => c.id !== cId) };
+                                }
+                                return l;
+                            })
+                        };
+                    }
+                    return s;
+                }));
+            };
+
+            const exportBlueprintHTML = () => {
+                const getLabelAndColor = (typeId) => {
+                    for (const cat of CONTENT_CATEGORIES) {
+                        const opt = cat.options.find(o => o.id === typeId);
+                        if (opt) return { label: opt.label, color: opt.color };
+                    }
+                    return { label: 'Unknown', color: '#000' };
+                };
+
+                let htmlContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${courseTitle} - Blueprint</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 1000px; margin: 40px auto; padding: 20px; background-color: #f0f2f5; }
+                        .header { background: #1e293b; color: white; padding: 40px; rounded: 12px; border-radius: 12px; margin-bottom: 30px; }
+                        .header h1 { margin: 0; font-size: 28px; text-transform: uppercase; letter-spacing: 1px; }
+                        .header p { margin: 10px 0 0 0; opacity: 0.8; font-weight: bold; }
+                        .module { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 40px; overflow: hidden; border: 1px solid #e2e8f0; }
+                        .module-title { background: #334155; color: white; padding: 15px 25px; margin: 0; font-size: 20px; display: flex; align-items: center; gap: 12px; }
+                        .module-number { background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; font-size: 14px; }
+                        .lesson { padding: 25px; border-bottom: 1px solid #f1f5f9; }
+                        .lesson:last-child { border-bottom: none; }
+                        .lesson-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+                        .lesson-number { font-weight: 900; color: #3b82f6; background: #eff6ff; padding: 4px 10px; border-radius: 6px; border: 1px solid #dbeafe; }
+                        .lesson-name { font-size: 18px; font-weight: bold; color: #1e293b; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                        th { text-align: left; background: #f8fafc; padding: 12px; border-bottom: 2px solid #e2e8f0; font-size: 12px; text-transform: uppercase; color: #64748b; }
+                        td { padding: 15px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+                        .type-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; color: white; text-transform: uppercase; white-space: nowrap; }
+                        .details-text { white-space: pre-wrap; font-size: 14px; color: #475569; }
+                        @media print {
+                            body { background: white; margin: 0; padding: 0; }
+                            .module { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
+                            .header { border-radius: 0; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>${courseTitle}</h1>
+                        <p>NovoEd Course Blueprint Tool Export</p>
+                        <small>Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</small>
+                    </div>
+                `;
+
+                sections.forEach((s, sIdx) => {
+                    htmlContent += `
+                    <div class="module">
+                        <h2 class="module-title">
+                            <span class="module-number">MODULE ${sIdx + 1}</span>
+                            ${s.title || 'Untitled Module'}
+                        </h2>
+                    `;
+                    
+                    s.lessons.forEach((l, lIdx) => {
+                        htmlContent += `
+                        <div class="lesson">
+                            <div class="lesson-header">
+                                <span class="lesson-number">${sIdx + 1}.${lIdx + 1}</span>
+                                <span class="lesson-name">${l.title || 'Untitled Lesson'}</span>
+                            </div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width: 200px;">Component Type</th>
+                                        <th>Details / Script / Resources</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        `;
+                        
+                        l.content.forEach(c => {
+                            const info = getLabelAndColor(c.type);
+                            htmlContent += `
+                                    <tr>
+                                        <td>
+                                            <span class="type-badge" style="background-color: ${info.color}">${info.label}</span>
+                                        </td>
+                                        <td class="details-text">${c.details || '<em>No details provided.</em>'}</td>
+                                    </tr>
+                            `;
+                        });
+
+                        if (l.content.length === 0) {
+                            htmlContent += `<tr><td colspan="2" style="text-align: center; color: #94a3b8; font-style: italic; padding: 20px;">No components added to this lesson.</td></tr>`;
+                        }
+                        
+                        htmlContent += `
+                                </tbody>
+                            </table>
+                        </div>
+                        `;
+                    });
+                    
+                    htmlContent += `</div>`;
+                });
+
+                htmlContent += `
+                </body>
+                </html>
+                `;
+
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${courseTitle.replace(/\s+/g, '_')}_Blueprint_Export.html`;
+                a.click();
+            };
+
+            return (
+                <div className="max-w-5xl mx-auto py-12 px-4 pb-32">
+                    <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-blue-600 p-2 rounded-lg shadow-inner">
+                                <i data-lucide="layout-grid" className="text-white w-5 h-5"></i>
+                            </div>
+                            <h1 className="text-xl font-black text-slate-900 tracking-tight uppercase">NovoEd Blueprint</h1>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <span className="hidden md:block text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-2">Ready to export?</span>
+                            <button 
+                                onClick={exportBlueprintHTML}
+                                className="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-blue-700 transition-all shadow-lg active:scale-95"
+                            >
+                                <i data-lucide="file-check" className="w-4 h-4"></i>
+                                Download Formatted Plan
+                            </button>
+                        </div>
+                    </header>
+
+                    {/* Course Title Section */}
+                    <div className="mb-10 bg-white p-8 rounded-2xl shadow-sm border-t-8 border-blue-600 border-x border-b border-slate-200 transition-all focus-within:shadow-md">
+                        <label className="text-[10px] uppercase font-black text-slate-400 mb-2 block tracking-[0.2em]">Course / Learning Programme Title</label>
+                        <input 
+                            className="text-3xl font-black text-slate-900 bg-transparent border-none focus:ring-0 outline-none w-full placeholder:text-slate-200"
+                            value={courseTitle}
+                            onChange={(e) => setCourseTitle(e.target.value)}
+                            placeholder="Enter Course Title..."
+                        />
+                    </div>
+
+                    <div className="space-y-10">
+                        {sections.map((section, sIdx) => (
+                            <div key={section.id} className="section-card bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                                <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
+                                    <div className="flex items-center gap-3 flex-1">
+                                        <div className="bg-slate-900 text-white text-xs font-black px-2 py-1 rounded">MOD {sIdx + 1}</div>
+                                        <input 
+                                            className="text-xl font-extrabold text-slate-800 bg-transparent border-none focus:ring-0 outline-none w-full placeholder:text-slate-300"
+                                            value={section.title}
+                                            onChange={(e) => updateSectionTitle(section.id, e.target.value)}
+                                            placeholder="Module Topic (e.g. Leadership Foundations)"
+                                        />
+                                    </div>
+                                    <button onClick={() => removeSection(section.id)} className="text-slate-300 hover:text-red-500 transition-colors px-2">
+                                        <i data-lucide="trash-2" className="w-5 h-5"></i>
+                                    </button>
+                                </div>
+
+                                <div className="space-y-8">
+                                    {section.lessons.map((lesson, lIdx) => (
+                                        <div key={lesson.id} className="lesson-card bg-slate-50/50 rounded-xl border border-slate-200 p-6">
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <span className="text-blue-600 font-black text-sm whitespace-nowrap bg-blue-50 px-2 py-1 rounded border border-blue-100">
+                                                    Lesson {sIdx + 1}.{lIdx + 1}
+                                                </span>
+                                                <input 
+                                                    className="text-lg font-bold text-slate-700 bg-transparent border-none focus:ring-0 outline-none w-full placeholder:text-slate-400 border-b border-transparent hover:border-slate-200 focus:border-blue-400"
+                                                    value={lesson.title}
+                                                    onChange={(e) => updateLessonTitle(section.id, lesson.id, e.target.value)}
+                                                    placeholder="Specific Lesson Name..."
+                                                />
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                {lesson.content.map((c) => (
+                                                    <div key={c.id} className="flex flex-col lg:flex-row gap-4 items-start bg-white p-5 rounded-xl border border-slate-200 shadow-sm transition-all focus-within:ring-2 ring-blue-100">
+                                                        <div className="w-full lg:w-64 shrink-0">
+                                                            <label className="text-[10px] uppercase font-black text-slate-400 mb-2 block tracking-wider">NovoEd Component</label>
+                                                            <select 
+                                                                className="w-full text-sm font-semibold border border-slate-200 rounded-lg px-3 py-2.5 bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer"
+                                                                value={c.type}
+                                                                onChange={(e) => updateContent(section.id, lesson.id, c.id, { type: e.target.value })}
+                                                            >
+                                                                {CONTENT_CATEGORIES.map(cat => (
+                                                                    <optgroup key={cat.label} label={cat.label}>
+                                                                        {cat.options.map(opt => (
+                                                                            <option key={opt.id} value={opt.id}>{opt.label}</option>
+                                                                        ))}
+                                                                    </optgroup>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                        <div className="flex-1 w-full">
+                                                            <label className="text-[10px] uppercase font-black text-slate-400 mb-2 block tracking-wider">Details / Content / Links</label>
+                                                            <textarea 
+                                                                className="w-full text-sm border-none focus:ring-0 resize-none py-1 min-h-[80px] placeholder:text-slate-300"
+                                                                placeholder="Paste copy here, video links, or resource names..."
+                                                                value={c.details}
+                                                                onChange={(e) => updateContent(section.id, lesson.id, c.id, { details: e.target.value })}
+                                                            />
+                                                        </div>
+                                                        <button 
+                                                            onClick={() => removeContent(section.id, lesson.id, c.id)}
+                                                            className="text-slate-300 hover:text-red-500 p-2 transition-colors"
+                                                            title="Remove Item"
+                                                        >
+                                                            <i data-lucide="minus-circle" className="w-5 h-5"></i>
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                                <button 
+                                                    onClick={() => addContent(section.id, lesson.id)}
+                                                    className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 hover:border-blue-300 hover:text-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest"
+                                                >
+                                                    <i data-lucide="plus" className="w-4 h-4"></i>
+                                                    Add Content Component
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <button 
+                                        onClick={() => addLesson(section.id)}
+                                        className="w-full py-3 bg-white border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50 font-bold transition-all flex items-center justify-center gap-2 text-sm shadow-sm"
+                                    >
+                                        <i data-lucide="file-plus" className="w-4 h-4"></i>
+                                        Add Lesson to Module {sIdx + 1}
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+
+                        <button 
+                            onClick={addSection}
+                            className="w-full flex items-center justify-center gap-3 bg-slate-900 text-white font-black py-6 rounded-2xl hover:bg-black transition-all shadow-xl uppercase tracking-widest text-sm"
+                        >
+                            <i data-lucide="plus" className="w-6 h-6"></i>
+                            Create New Module
+                        </button>
+                    </div>
+
+                    <footer className="mt-20 text-center border-t border-slate-200 pt-10">
+                        <p className="text-slate-400 text-sm max-w-md mx-auto leading-relaxed">
+                            The formatted export is a standalone HTML document. You can open it in any browser and use 'Print to PDF' to create a portable document for your team.
+                        </p>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
