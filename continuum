@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bauer Media - Coaching Continuum</title>
+    <style>
+        :root {
+            /* Bauer Brand Palette Custom Properties */
+            --bauer-purple: #4700A3;
+            --brand-peach: #FF7D6A;
+            --brand-lemon: #FFF050;
+            --brand-mint: #1FD1BD;
+            --brand-aqua: #5AFOFF;
+            
+            /* High-Contrast text mappings from brand guide */
+            --dark-peach: #D05C5D;
+            --dark-lemon: #F0A800;
+            --dark-mint: #009392;
+            --dark-aqua: #349CDC;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            color: #000000; /* Black text for long-form readability per brand guide */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .continuum-container {
+            width: 100%;
+            max-width: 780px;
+            background: #ffffff;
+            padding: 25px;
+            border: 2px solid #f0f0f0;
+            border-radius: 16px;
+        }
+
+        /* Header Setup styled around Bauer Purple */
+        .top-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 35px;
+        }
+
+        .direction-label {
+            width: 46%;
+        }
+
+        .direction-label.right {
+            text-align: right;
+        }
+
+        .direction-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--bauer-purple);
+            margin: 0 0 6px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .direction-desc {
+            font-size: 0.95rem;
+            color: #444444;
+            margin: 0;
+        }
+
+        /* The Interactive Multi-Color Track */
+        .track-wrapper {
+            position: relative;
+            margin: 40px 15px;
+            height: 12px;
+        }
+
+        .gradient-track {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 6px;
+            /* Shifting fluidly across the corporate primary brand colors */
+            background: linear-gradient(to right, 
+                var(--bauer-purple), 
+                var(--brand-peach), 
+                var(--brand-lemon), 
+                var(--brand-mint), 
+                var(--brand-aqua)
+            );
+            z-index: 1;
+        }
+
+        .nodes-container {
+            position: absolute;
+            top: -6px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            z-index: 2;
+            box-sizing: border-box;
+            padding: 0 2px;
+        }
+
+        .node {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 4px solid #e0e0e0;
+            cursor: pointer;
+            box-sizing: border-box;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .node:hover {
+            transform: scale(1.2);
+        }
+
+        .node.active {
+            transform: scale(1.3);
+            background: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(71, 0, 163, 0.3);
+        }
+
+        /* Interactive Dynamic Information Panel */
+        .details-box {
+            margin-top: 35px;
+            text-align: center;
+            min-height: 100px;
+            padding: 20px;
+            border-radius: 12px;
+            background-color: #ffffff;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border-top: 5px solid var(--bauer-purple);
+        }
+
+        .current-stage {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0 0 8px 0;
+        }
+
+        .current-phrase {
+            font-size: 1.15rem;
+            font-style: italic;
+            color: #333333;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="continuum-container">
+    <div class="top-labels">
+        <div class="direction-label">
+            <h3 class="direction-title">Directive</h3>
+            <p class="direction-desc">I bring the answer &bull; <strong>push</strong></p>
+        </div>
+        <div class="direction-label right">
+            <h3 class="direction-title">Non-directive</h3>
+            <p class="direction-desc">They find the answer &bull; <strong>pull</strong></p>
+        </div>
+    </div>
+
+    <div class="track-wrapper">
+        <div class="gradient-track"></div>
+        <div class="nodes-container">
+            <div class="node" data-index="0" style="border-color: var(--bauer-purple);"></div>
+            <div class="node" data-index="1" style="border-color: var(--brand-peach);"></div>
+            <div class="node" data-index="2" style="border-color: var(--brand-lemon);"></div>
+            <div class="node" data-index="3" style="border-color: var(--brand-mint);"></div>
+            <div class="node" data-index="4" style="border-color: var(--brand-aqua);"></div>
+        </div>
+    </div>
+
+    <div class="details-box" id="detailsBox">
+        <h4 class="current-stage" id="stageTitle">Loading...</h4>
+        <p class="current-phrase" id="stagePhrase"></p>
+    </div>
+</div>
+
+<script>
+    // Data structures paired mapped precisely with high-contrast variants for accessibility
+    const data = [
+        { stage: "Telling", phrase: '"Do this"', color: "var(--bauer-purple)" },
+        { stage: "Advising", phrase: '"Have you tried..."', color: "var(--dark-peach)" },
+        { stage: "Suggesting", phrase: '"One option is..."', color: "var(--dark-lemon)" },
+        { stage: "Asking", phrase: '"What do you see?"', color: "var(--dark-mint)" },
+        { stage: "Listening", phrase: '"Tell me more..."', color: "var(--dark-aqua)" }
+    ];
+
+    const nodes = document.querySelectorAll('.node');
+    const stageTitle = document.getElementById('stageTitle');
+    const stagePhrase = document.getElementById('stagePhrase');
+    const detailsBox = document.getElementById('detailsBox');
+
+    function updateContinuum(index) {
+        nodes.forEach((node, idx) => {
+            node.classList.remove('active');
+            if(idx == index) {
+                node.style.borderColor = data[idx].color;
+                node.style.backgroundColor = data[idx].color;
+            }
+        });
+
+        nodes[index].classList.add('active');
+
+        // Dynamic context loading
+        stageTitle.textContent = data[index].stage;
+        stageTitle.style.color = data[index].color;
+        stagePhrase.textContent = data[index].phrase;
+        detailsBox.style.borderTopColor = data[index].color;
+    }
+
+    nodes.forEach(node => {
+        node.addEventListener('click', (e) => {
+            const index = e.target.getAttribute('data-index');
+            updateContinuum(index);
+        });
+    });
+
+    // Landing screen default state focuses directly on middle choice ("Suggesting")
+    updateContinuum(2);
+</script>
+
+</body>
+</html>
